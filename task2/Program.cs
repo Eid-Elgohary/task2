@@ -1,4 +1,5 @@
-﻿namespace ConsoleApp1
+﻿
+namespace ConsoleApp1
 {
     internal class Program
     {
@@ -19,7 +20,7 @@
 
                 StringInput = Console.ReadLine().ToLower();
 
-                input = Convert.ToChar(StringInput);
+                input = StringInput.Length==0? 't' : StringInput[0];
 
                 switch (input)
                 {
@@ -36,10 +37,10 @@
                         DisplayMean(MyList);
                         break;
                     case 'l':
-                        DisplayTheLargest(MyList);
+                        DisplayLargest(MyList);
                         break;
                     case 's':
-                        DisplayTheSmallest(MyList);
+                        DisplaySmallest(MyList);
                         break;
                     case 'f':
                         FindInList(MyList);
@@ -54,7 +55,7 @@
                         RemoveDuplicates(MyList);
                         break;
                     case 'v':
-                        reverseList(MyList);
+                        ReverseList(MyList);
                         break;
                     case 'p':
                         PrintList(MyList);
@@ -62,15 +63,19 @@
                     case 'n':
                         PrintCount(MyList);
                         break;
+                    case 't':
+                        ListStatus(MyList);
+                        break;
                     case 'q':
                         flag = false;
                         break;
                     default:
-                        PrintMSG("please enter a valid choice...",1);
+                        PrintMSG("please enter a valid choice...", true);
                         break;
                 }
 
             } while (flag);
+
 
             #endregion
 
@@ -80,24 +85,19 @@
         #region printing
         public static void PrintList(List<int> list)
         {
-            if (list.Count == 0)
-            {
-                PrintMSG("list is empty...", 1);
-            }
-            else
-            {
-                string result = "[ ";
+            if (!Validate(list)) return;
 
-                foreach (var item in list)
-                {
-                    result += item + " ";
-                }
-                result += " ]";
+            string result = "[ ";
 
-                PrintCenter("===========================\n");
-                PrintCenter(result + "\n");
-                PrintCenter("===========================\n");
+            foreach (var item in list)
+            {
+                result += item + " ";
             }
+            result += " ]";
+
+            PrintCenter("===========================\n");
+            PrintCenter(result + "\n");
+            PrintCenter("===========================\n");
         }
         public static void DrawMenu()
         {
@@ -110,13 +110,14 @@
             PrintCenter("F - Find a Number      S - Display smallest\n");
             PrintCenter("R - Remove a Number    U - Sum All Numbers\n");
             PrintCenter("D - Remove Duplicates  V - Reverse List\n");
-            PrintCenter("N - List Count         Q - Quit\n");
+            PrintCenter("N - List Count         T - List Status\n");
+            PrintCenter("Q - Quit\n");
 
             PrintCenter("Enter choice: \n");
         }
-        public static void PrintMSG(string msg, int flag)
+        public static void PrintMSG(string msg, bool IsError)
         {
-            if (flag == 1)
+            if (IsError)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
             }
@@ -136,11 +137,13 @@
         #region sorting
         public static void Sort(List<int> list)
         {
+            if (!Validate(list)) return;
+
             List<int> sorted = MergeSort(list, 0, list.Count - 1);
             list.Clear();
             list.AddRange(sorted);
 
-            PrintMSG("list sorted successfully...", 0);
+            PrintMSG("list sorted successfully...", false);
         }
         public static List<int> Merge(List<int> arr1, List<int> arr2)
         {
@@ -194,174 +197,189 @@
         #endregion
 
         #region listmethods
+        public static bool Validate(List<int> list)
+        {
+            if (list.Count == 0)
+            {
+                PrintMSG("list is empty...", true);
+                return false;
+            }
+            return true;
+        }
         public static void Add(List<int> list)
         {
             PrintCenter("please enter a value to add...\n");
             Console.SetCursorPosition(40, Console.CursorTop);
 
-            int value = Convert.ToInt32(Console.ReadLine());
+
+            int? TemPValue = ReadNumber();
+            if (TemPValue == null) return;
+            int value = (int)TemPValue;
+
 
             list.Add(value);
-            PrintMSG($"{value} added successfully...", 0);
+            PrintMSG($"{value} added successfully...", false);
         }
         public static void ClearList(List<int> list)
         {
-            if (list.Count == 0)
-            {
-                PrintMSG("list is already empty...", 1);
-            }
-            else
-            {
-                list.Clear();
-                PrintMSG("list is cleared successfully...", 0);
-            }
+            if (!Validate(list)) return;
+
+            list.Clear();
+            PrintMSG("list is cleared successfully...", false);
             Console.ForegroundColor = ConsoleColor.Green;
         }
         public static void FindInList(List<int> list)
         {
-            if (list.Count == 0)
-            {
-                PrintMSG("list is empty...", 1);
-            }
-            else
-            {
-                PrintCenter("enter a number to find...\n");
-                Console.SetCursorPosition(40, Console.CursorTop);
-                int value = Convert.ToInt32(Console.ReadLine());
+            if (!Validate(list)) return;
 
-                for (int i = 0; i < list.Count; i++)
+            PrintCenter("enter a number to find...\n");
+            Console.SetCursorPosition(40, Console.CursorTop);
+
+            int? TemPValue = ReadNumber();
+            if (TemPValue == null) return;
+            int value = (int)TemPValue;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i] == value)
                 {
-                    if (list[i] == value)
-                    {
-                        PrintMSG($"{value} found in index {i}", 0);
-                        return;
-                    }
+                    PrintMSG($"{value} found in index {i}", false);
+                    return;
                 }
-                PrintMSG($"{value} not found", 1);
             }
+            PrintMSG($"{value} not found", true);
         }
-        public static void DisplayTheLargest(List<int> list)
+        public static void DisplayLargest(List<int> list)
         {
-            if (list.Count == 0)
+            if (!Validate(list)) return;
+
+            int max = list[0];
+            for (int i = 1; i < list.Count; i++)
             {
-                PrintMSG("list is empty...", 1);
-            }
-            else
-            {
-                int max = list[0];
-                for (int i = 1; i < list.Count; i++)
+                if (list[i] > max)
                 {
-                    if (list[i] > max)
-                    {
-                        max = list[i];
-                    }
+                    max = list[i];
                 }
-                PrintMSG($"the largest value is {max}", 0);
             }
+            PrintMSG($"the largest value is {max}", false);
         }
-        public static void DisplayTheSmallest(List<int> list)
+        public static void DisplaySmallest(List<int> list)
         {
-            if (list.Count == 0)
+            if (!Validate(list)) return;
+
+            int min = list[0];
+            for (int i = 1; i < list.Count; i++)
             {
-                PrintMSG("list is empty...", 1);
-            }
-            else
-            {
-                int min = list[0];
-                for (int i = 1; i < list.Count; i++)
+                if (list[i] < min)
                 {
-                    if (list[i] < min)
-                    {
-                        min = list[i];
-                    }
+                    min = list[i];
                 }
-                PrintMSG($"the smallest value is {min}", 0);
             }
+            PrintMSG($"the smallest value is {min}", false);
         }
         public static void DisplayMean(List<int> list)
         {
-            if (list.Count == 0)
-            {
-                PrintMSG("list is empty...", 1);
-            }
-            else
-            {
-                int result = 0;
-                for (int i = 0; i < list.Count; i++)
-                {
-                    result += list[i];
-                }
-                double Avg = result / list.Count;
+            if (!Validate(list)) return;
 
-                PrintMSG($"the average is {Avg} ", 0);
-            }
-        }
-        public static void Remove(List<int> list)
-        {
-            PrintCenter("enter a number to remove...\n");
-            Console.SetCursorPosition(40, Console.CursorTop);
-
-            int value = Convert.ToInt32(Console.ReadLine());
-
-            if (list.Remove(value))
-                PrintMSG($"{value} removed successfully", 0);
-            else
-                PrintMSG($"{value} not found in list", 1);
-        }
-        public static void Sum(List<int> list)
-        {
             int result = 0;
             for (int i = 0; i < list.Count; i++)
             {
                 result += list[i];
             }
-            PrintMSG($"sum of list is {result}", 0);
+            double Avg = (double)result / list.Count;
+
+            PrintMSG($"the average is {Avg} ", false);
+        }
+        public static void Remove(List<int> list)
+        {
+            if (!Validate(list)) return;
+
+            PrintCenter("enter a number to remove...\n");
+            Console.SetCursorPosition(40, Console.CursorTop);
+
+            int? TemPValue = ReadNumber();
+            if (TemPValue == null) return;
+            int value = (int)TemPValue;
+
+            if (list.Remove(value))
+                PrintMSG($"{value} removed successfully", false);
+            else
+                PrintMSG($"{value} not found in list", true);
+        }
+        public static void Sum(List<int> list)
+        {
+            if (!Validate(list)) return;
+
+            int result = 0;
+            for (int i = 0; i < list.Count; i++)
+            {
+                result += list[i];
+            }
+            PrintMSG($"sum of list is {result}", false);
         }
         public static void RemoveDuplicates(List<int> list)
         {
+            if (!Validate(list)) return;
+
             HashSet<int> set = new HashSet<int>(list);
             List<int> uniqueList = set.ToList();
             list.Clear();
             list.AddRange(uniqueList);
-            PrintMSG("duplicates removed succssefully.. ", 0);
+            PrintMSG("duplicates removed succssefully.. ", false);
 
         }
-        public static void reverseList(List<int> list)
+        public static void ReverseList(List<int> list)
         {
-            if (list.Count == 0)
+            if (!Validate(list)) return;
+
+            int temp;
+            int i = 0, j = list.Count - 1;
+
+            while (i < j)
             {
-                PrintMSG("list is empty...", 1);
+                temp = list[i];
+                list[i] = list[j];
+                list[j] = temp;
+                i++;
+                j--;
+
             }
-            else
-            {
-
-                int temp;
-                int i = 0, j = list.Count - 1;
-
-                while (i < j)
-                {
-                    temp = list[i];
-                    list[i] = list[j];
-                    list[j] = temp;
-                    i++;
-                    j--;
-
-                }
-                PrintMSG("list reversed successfully", 0);
-            }
-
+            PrintMSG("list reversed successfully", false);
         }
         public static void PrintCount(List<int> list)
         {
-            if (list.Count == 0)
+            if (!Validate(list)) return;
+
+            PrintMSG($"list count is {list.Count}", false);
+        }
+
+        public static int? ReadNumber()
+        {
+            bool isValue = int.TryParse(Console.ReadLine(), out int value);
+
+            if (isValue)
+                return value;
+
+            PrintMSG("invalid number", true);
+            return null;
+        }
+
+        public static void ListStatus(List<int> list)
+        {
+            PrintMSG($"list is empty: {list.Count == 0}", false);
+            PrintMSG($"list count: {list.Count}", false);
+
+            if (list.Count > 0)
             {
-                PrintMSG("list is empty...", 1);
+                PrintMSG($"first item: {list[0]}", false);
+                PrintMSG($"last item: {list[list.Count - 1]}", false);
             }
-            else
-            {
-                PrintMSG($"list count is {list.Count}", 0);
-            }
-        } 
+
+        }
+
+
+
+
         #endregion
 
 
@@ -369,8 +387,4 @@
     }
 
 }
-
-
-
-
 
